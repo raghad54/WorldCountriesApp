@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct WorldCountriesApp: App {
+    @StateObject private var coordinator =  AppCoordinator()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            coordinator.buildRootView()
         }
     }
 }
