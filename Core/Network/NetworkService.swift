@@ -9,37 +9,42 @@ import Foundation
 import Combine
 
 protocol NetworkServiceProtocol {
-    func fetchCountries() -> AnyPublisher<[Country], Error>
+    func searchCountries(by name: String) -> AnyPublisher<[Country], Error>
 }
 
 final class NetworkService: NetworkServiceProtocol {
-    private let stringURL = ""
-    func fetchCountries() -> AnyPublisher<[Country], Error> {
-        guard let url = URL(string: "https://restcountries.com/v3.1/all?fields=name,capital,currencies,flags,latlng") else {
-            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()}
+    
+    func searchCountries(by name: String) -> AnyPublisher<[Country], Error> {
+        guard let url = URL(string: "https://restcountries.com/v3.1/name/\(name)?fields=name,capital,currencies,flags,latlng") else {
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
         
-        print("🌍 Fetching countries from:", url)
-
+        print("Searching Countries with name \(name)")
+        
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { data, response in
-                if let httpResponse = response as? HTTPURLResponse {
-                    print("Status code:", httpResponse.statusCode)
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw NetworkError.invalidResponse  }
+                    
+                    switch httpResponse.statusCode {
+                    case  200..<300:
+                        return data
+                    case 404:
+                        throw NetworkError.serverError("No country found matching “\(name)")
+                    default:
+                        throw NetworkError.serverError("Server return status code “\(httpResponse.statusCode)")
                 }
-                print("Raw data length:", data.count)
-                return data
             }
-            .decode(type: [Country].self, decoder: JSONDecoder())
+            .decode(type: [Country].self, decoder:JSONDecoder())
+            .mapError { error -> NetworkError in
+                if let networkError = error as? NetworkError{
+                    return networkError
+                } else if error is DecodingError {
+                    return .decodingError
+                } else {
+                    return .serverError(error.localizedDescription)
+                }   
+            }
             .receive(on: DispatchQueue.main)
-            .handleEvents(receiveOutput: { countries in
-                print("Received \(countries.count) countries")
-            }, receiveCompletion: { completion in
-                switch completion {
-                case .failure(let error):
-                    print("❌ Network error:", error.localizedDescription)
-                case .finished:
-                    print("✅ Successfully finished fetching.")
-                }
-            })
             .eraseToAnyPublisher()
     }
 }

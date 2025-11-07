@@ -9,11 +9,11 @@ import Foundation
 import CoreLocation
 
 struct Country: Identifiable, Codable, Equatable {
-    var id = UUID()
+    let id = UUID()
     let name: Name
     let capital: [String]?
     let currencies: [String: Currency]?
-    let flags: Flags
+    let flags: Flag
     let latlng: [Double]?
     
     var displayName: String {
@@ -21,15 +21,15 @@ struct Country: Identifiable, Codable, Equatable {
     }
     
     var capitalName: String {
-        capital?.first ?? "No Capital"
+        capital?.first ?? "-"
     }
     
     var currencyName: String {
-        currencies?.values.first?.name ?? "Unknown"
+        currencies?.values.first?.name ?? "-"
     }
     
     var currencySymbol: String {
-        currencies?.values.first?.symbol ?? ""
+        currencies?.values.first?.symbol ?? "-"
     }
     
     var flagURL: String {
@@ -46,6 +46,6 @@ struct Name: Codable, Equatable {
     let common: String
 }
 
-struct Flags: Codable, Equatable {
+struct Flag: Codable, Equatable {
     let png: String
 }

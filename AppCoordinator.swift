@@ -10,21 +10,18 @@ import SwiftUI
 
 final class AppCoordinator: ObservableObject {
     @Published var selectedCountry: Country? = nil
-    
+    @StateObject var countryListViewModel = CountryListViewModel()
+
     @ViewBuilder
-        func buildRootView() -> some View {
-            NavigationStack {
-                CountryListView()
-                    .environmentObject(self)
-//                    .navigationDestination(item: $selectedCountry) { country in
-//                        //CountryDetailView(country: country)
-//                    }
-            }
+    func buildRootView() -> some View {
+        NavigationStack {
+            CountryListView()
+                .environmentObject(self)
+                .environmentObject(countryListViewModel) 
         }
+    }
 
-        func showDetails(for country: Country) {
-            selectedCountry = country
-        }
+    func showDetails(for country: Country) {
+        selectedCountry = country
+    }
 }
-
-

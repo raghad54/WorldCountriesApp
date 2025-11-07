@@ -8,76 +8,128 @@
 import SwiftUI
 
 struct CountryListView: View {
-    @StateObject var viewModel = CountryLisViewModel()
     @EnvironmentObject var coordinator: AppCoordinator
-
+    @EnvironmentObject var viewModel: CountryListViewModel
+    @State private var showingSearch = false
+    @Namespace private var animation
+    
     var body: some View {
-        NavigationView {
-            ZStack {
-                // MARK: - Main Content
-                List(viewModel.countries) { country in
-                    CountryRowView(country: country)
-                        .onTapGesture {
-                            //coordinator.showCountryDetails(country)
-                        }
-                        .navigationTitle("Countries")
-                }
-                .navigationTitle("Countries")
+        NavigationStack {
+            ZStack(alignment: .bottomTrailing) {
+                LinearGradient(
+                    colors: [.blue.opacity(0.1), .mint.opacity(0.2)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                // MARK: - Loading Indicator (Centered)
-                if viewModel.isLoading {
-                    ZStack {
-                        Color.black.opacity(0.3)
-                            .ignoresSafeArea()
-                        ProgressView("Loading...")
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                            .font(.headline)
-                            .padding(20)
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
-                            .shadow(radius: 8)
-                    }
-                    .transition(.opacity)
-                }
-
-                // MARK: - Error Overlay
-                if let error = viewModel.errorMessage {
-                    VStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 48))
-                            .foregroundColor(.orange)
-
-                        Text("Something went wrong")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-
-                        Text(error)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-
-                        Button("Try Again") {
-                            viewModel.fetchCountries()
+                VStack(spacing: 12) {
+                    VStack(spacing: 4) {
+                        HStack {
+                            Image(systemName: "globe.europe.africa.fill")
+                                .font(.system(size: 34))
+                                .foregroundColor(.blue)
+                                .matchedGeometryEffect(id: "icon", in: animation)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Countries")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.blue, .teal],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                Text("Explore capitals and currencies 🌍")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                        .controlSize(.large)
-                        .padding(.top, 8)
+                        .padding(.horizontal)
                     }
-                    .padding(30)
-                    .background(.thinMaterial)
-                    .cornerRadius(16)
-                    .shadow(radius: 10)
-                    .padding()
-                    .transition(.opacity)
+                    .padding(.top, 16)
+                    
+                    Divider()
+                        .padding(.horizontal)
+                        .opacity(0.3)
+                    
+                    if viewModel.countries.isEmpty {
+                        Spacer()
+                        VStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass.circle")
+                                .font(.system(size: 48))
+                                .foregroundColor(.blue.opacity(0.7))
+                            Text("No countries added yet")
+                                .font(.headline)
+                            Text("Tap the + button to start exploring 🌏")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .transition(.opacity)
+                        Spacer()
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(viewModel.countries) { country in
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack {
+                                            Text(country.displayName)
+                                                .font(.title3.bold())
+                                            Spacer()
+                                            Text(country.flagEmoji)
+                                                .font(.largeTitle)
+                                        }
+                                        Text("Capital: \(country.capitalName)")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        Text("Currency: \(country.currencyName) \(country.currencySymbol)")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding()
+                                    .background(.ultraThinMaterial)
+                                    .cornerRadius(16)
+                                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                                    .padding(.horizontal)
+                                    .onTapGesture {
+                                        withAnimation(.spring()) {
+                                            coordinator.showDetails(for: country)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.vertical)
+                        }
+                        .transition(.opacity)
+                    }
                 }
-            }
-            .animation(.easeInOut, value: viewModel.isLoading)
-            .animation(.easeInOut, value: viewModel.errorMessage)
-            .onAppear {
-                viewModel.fetchCountries()
+                
+                Button(action: { showingSearch = true }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 56))
+                        .foregroundStyle(.blue.gradient)
+                        .shadow(radius: 6)
+                        .padding()
+                }
+                .accessibilityLabel("Add new country")
+                .sheet(isPresented: $showingSearch) {
+                    CountrySearchView()
+                        .environmentObject(viewModel)
+                }
             }
         }
+    }
+}
+
+private extension Country {
+    var flagEmoji: String {
+        guard let code = name.common.unicodeScalars
+            .map({ 127397 + $0.value })
+            .compactMap(UnicodeScalar.init)
+            .map(String.init)
+            .joined()
+            as String? else { return "🌍" }
+        return code
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 
-final class CountryLisViewModel: ObservableObject {
+final class CountryListViewModel: ObservableObject {
     
     @Published private(set) var countries: [Country] = []
     @Published private(set) var selectedCountries: [Country] =  []
@@ -24,20 +24,6 @@ final class CountryLisViewModel: ObservableObject {
     init(networkService:NetworkServiceProtocol = NetworkService(), storage: StorageManager = .shared) {
         self.networkService = networkService
         self.storage = storage
-    }
-    
-    func fetchCountries() {
-        isLoading = true
-        networkService.fetchCountries()
-            .sink { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    self?.errorMessage = error.localizedDescription
-                }
-            } receiveValue: { [weak self] countries in
-                self?.countries = countries
-            }
-            .store(in:&cancellable)
     }
     
     func addCountry(_ country: Country) {

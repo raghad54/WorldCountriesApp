@@ -14,10 +14,16 @@
 		042F117B2EBCCF3100F6D006 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F117A2EBCCF3100F6D006 /* NetworkService.swift */; };
 		042F117F2EBCCF5200F6D006 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F117E2EBCCF5200F6D006 /* StorageManager.swift */; };
 		042F11852EBCD10A00F6D006 /* CountryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11842EBCD10A00F6D006 /* CountryListView.swift */; };
-		042F11872EBCDB2D00F6D006 /* CountryLisViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11862EBCDB2D00F6D006 /* CountryLisViewModel.swift */; };
+		042F11872EBCDB2D00F6D006 /* CountryListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11862EBCDB2D00F6D006 /* CountryListViewModel.swift */; };
 		042F11892EBCDB7300F6D006 /* CountryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11882EBCDB7300F6D006 /* CountryRowView.swift */; };
 		042F11902EBD259F00F6D006 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F118F2EBD259F00F6D006 /* AppCoordinator.swift */; };
 		042F11922EBD351D00F6D006 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11912EBD351D00F6D006 /* NetworkError.swift */; };
+		042F11952EBE1DF500F6D006 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11942EBE1DF500F6D006 /* LocationManager.swift */; };
+		042F11972EBE1E7200F6D006 /* DetailsMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11962EBE1E7200F6D006 /* DetailsMainView.swift */; };
+		042F11992EBE1E8900F6D006 /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11982EBE1E8900F6D006 /* DetailsView.swift */; };
+		042F119D2EBE1FD900F6D006 /* CountrySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F119C2EBE1FD900F6D006 /* CountrySearchView.swift */; };
+		042F119F2EBE1FF000F6D006 /* CountrySearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F119E2EBE1FF000F6D006 /* CountrySearchViewModel.swift */; };
+		042F11A32EBE661700F6D006 /* CountrySearchResultRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11A22EBE661700F6D006 /* CountrySearchResultRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,10 +54,16 @@
 		042F117A2EBCCF3100F6D006 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		042F117E2EBCCF5200F6D006 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		042F11842EBCD10A00F6D006 /* CountryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryListView.swift; sourceTree = "<group>"; };
-		042F11862EBCDB2D00F6D006 /* CountryLisViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryLisViewModel.swift; sourceTree = "<group>"; };
+		042F11862EBCDB2D00F6D006 /* CountryListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryListViewModel.swift; sourceTree = "<group>"; };
 		042F11882EBCDB7300F6D006 /* CountryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryRowView.swift; sourceTree = "<group>"; };
 		042F118F2EBD259F00F6D006 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		042F11912EBD351D00F6D006 /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+		042F11942EBE1DF500F6D006 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		042F11962EBE1E7200F6D006 /* DetailsMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsMainView.swift; sourceTree = "<group>"; };
+		042F11982EBE1E8900F6D006 /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsView.swift; sourceTree = "<group>"; };
+		042F119C2EBE1FD900F6D006 /* CountrySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySearchView.swift; sourceTree = "<group>"; };
+		042F119E2EBE1FF000F6D006 /* CountrySearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySearchViewModel.swift; sourceTree = "<group>"; };
+		042F11A22EBE661700F6D006 /* CountrySearchResultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySearchResultRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +179,7 @@
 			isa = PBXGroup;
 			children = (
 				042F11812EBCCF8600F6D006 /* Main */,
+				042F11932EBE1DB600F6D006 /* Location */,
 				042F11822EBCD0A700F6D006 /* Details */,
 			);
 			path = Countries;
@@ -176,7 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				042F11842EBCD10A00F6D006 /* CountryListView.swift */,
-				042F11862EBCDB2D00F6D006 /* CountryLisViewModel.swift */,
+				042F11862EBCDB2D00F6D006 /* CountryListViewModel.swift */,
 				042F11882EBCDB7300F6D006 /* CountryRowView.swift */,
 			);
 			path = Main;
@@ -185,6 +198,8 @@
 		042F11822EBCD0A700F6D006 /* Details */ = {
 			isa = PBXGroup;
 			children = (
+				042F11962EBE1E7200F6D006 /* DetailsMainView.swift */,
+				042F11982EBE1E8900F6D006 /* DetailsView.swift */,
 			);
 			path = Details;
 			sourceTree = "<group>";
@@ -192,6 +207,9 @@
 		042F118C2EBD050000F6D006 /* Search */ = {
 			isa = PBXGroup;
 			children = (
+				042F119C2EBE1FD900F6D006 /* CountrySearchView.swift */,
+				042F11A22EBE661700F6D006 /* CountrySearchResultRow.swift */,
+				042F119E2EBE1FF000F6D006 /* CountrySearchViewModel.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -209,6 +227,14 @@
 			children = (
 			);
 			path = Test;
+			sourceTree = "<group>";
+		};
+		042F11932EBE1DB600F6D006 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				042F11942EBE1DF500F6D006 /* LocationManager.swift */,
+			);
+			path = Location;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -342,13 +368,19 @@
 			files = (
 				042F117B2EBCCF3100F6D006 /* NetworkService.swift in Sources */,
 				042F11852EBCD10A00F6D006 /* CountryListView.swift in Sources */,
+				042F119F2EBE1FF000F6D006 /* CountrySearchViewModel.swift in Sources */,
 				042F11902EBD259F00F6D006 /* AppCoordinator.swift in Sources */,
+				042F11952EBE1DF500F6D006 /* LocationManager.swift in Sources */,
 				042F11782EBCCF0B00F6D006 /* Currency.swift in Sources */,
+				042F11972EBE1E7200F6D006 /* DetailsMainView.swift in Sources */,
+				042F11992EBE1E8900F6D006 /* DetailsView.swift in Sources */,
+				042F11A32EBE661700F6D006 /* CountrySearchResultRow.swift in Sources */,
 				042F11762EBCCEF600F6D006 /* Country.swift in Sources */,
 				042F117F2EBCCF5200F6D006 /* StorageManager.swift in Sources */,
 				042F11892EBCDB7300F6D006 /* CountryRowView.swift in Sources */,
 				042F11472EBCBDF500F6D006 /* WorldCountriesApp.swift in Sources */,
-				042F11872EBCDB2D00F6D006 /* CountryLisViewModel.swift in Sources */,
+				042F119D2EBE1FD900F6D006 /* CountrySearchView.swift in Sources */,
+				042F11872EBCDB2D00F6D006 /* CountryListViewModel.swift in Sources */,
 				042F11922EBD351D00F6D006 /* NetworkError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -8,7 +8,7 @@
 import Foundation
 
 struct Currency: Codable, Equatable {
-    let name: String?
+    let name: String
     let symbol: String?
 }
 
