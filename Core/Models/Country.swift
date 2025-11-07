@@ -8,13 +8,14 @@
 import Foundation
 import CoreLocation
 
-struct Country: Identifiable, Codable, Equatable {
-    let id = UUID()
+struct Country: Identifiable, Codable, Equatable, Hashable {
+    let id: UUID = UUID()
     let name: Name
     let capital: [String]?
     let currencies: [String: Currency]?
     let flags: Flag
     let latlng: [Double]?
+    let cca2: String?
     
     var displayName: String {
         name.common
@@ -42,22 +43,21 @@ struct Country: Identifiable, Codable, Equatable {
     }
 }
 
-struct Name: Codable, Equatable {
+struct Name: Codable, Equatable,Hashable {
     let common: String
 }
 
-struct Flag: Codable, Equatable {
+struct Flag: Codable, Equatable,Hashable {
     let png: String
 }
 
  extension Country {
-    var flagEmoji: String {
-        guard let code = name.common.unicodeScalars
-            .map({ 127397 + $0.value })
-            .compactMap(UnicodeScalar.init)
-            .map(String.init)
-            .joined()
-            as String? else { return "🌍" }
-        return code
+     var flagEmoji: String {
+         guard let code = cca2 else { return "🌍" }
+         return code
+             .uppercased()
+             .unicodeScalars
+             .compactMap { UnicodeScalar(127397 + $0.value).map(String.init) }
+             .joined()
     }
 }

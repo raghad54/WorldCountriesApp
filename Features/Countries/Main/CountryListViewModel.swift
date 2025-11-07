@@ -33,7 +33,7 @@ final class CountryListViewModel: ObservableObject {
             selectedCountries.removeFirst()
         }
         
-        selectedCountries.append(country)
+        selectedCountries.insert(country, at: 0)
         storage.saveCountries(selectedCountries)
     }
     
