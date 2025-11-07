@@ -14,18 +14,33 @@ struct CountryRowView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(spacing: 12) {
+                AsyncImage(url: URL(string: country.flagURL)) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 34)
+                        .cornerRadius(6)
+                        .shadow(radius: 2)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 50, height: 34)
+                        .cornerRadius(6)
+                }
+                
                 Text(country.displayName)
                     .font(.title3.bold())
+                
                 Spacer()
-                Text(country.flagEmoji)
-                    .font(.largeTitle)
+                
                 Button(action: onRemove) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.red)
                         .font(.title2)
                 }
             }
+            
             Text("Capital: \(country.capitalName)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)

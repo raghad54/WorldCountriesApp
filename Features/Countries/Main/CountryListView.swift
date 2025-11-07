@@ -65,8 +65,9 @@ struct CountryListView: View {
                 CountrySearchView()
                     .environmentObject(viewModel)
             }
+        }.onAppear {
+            viewModel.requestUserLocation()
         }
-        // Remove confirmation
         .alert("Remove Country?", isPresented: $showRemoveAlert, presenting: countryToRemove) { country in
             Button("Remove", role: .destructive) {
                 withAnimation {
@@ -108,7 +109,6 @@ private extension CountryListView {
         }
         .padding(.top, 16)
     }
-    
 }
 
 private extension CountryListView {
