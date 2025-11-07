@@ -24,20 +24,26 @@ final class CountryListViewModel: ObservableObject {
     init(networkService:NetworkServiceProtocol = NetworkService(), storage: StorageManager = .shared) {
         self.networkService = networkService
         self.storage = storage
+        self.selectedCountries = storage.loadCountries()
     }
     
     func addCountry(_ country: Country) {
-        var saved  = storage.loadCountries()
-        guard !saved.contains(country), saved.count < 5 else { return }
-        saved.append(country)
-        storage.saveCountries(saved)
-        countries = saved
+        guard !selectedCountries.contains(country) else { return }
+        if selectedCountries.count >= 5 {
+            selectedCountries.removeFirst()
+        }
+        
+        selectedCountries.append(country)
+        storage.saveCountries(selectedCountries)
     }
     
-    func removeCountries(_ country: Country) {
-        var saved = storage.loadCountries()
-        saved.removeAll {$0 == country}
-        storage.saveCountries(saved)
-        countries = saved
+    func removeCountry(_ country: Country) {
+        selectedCountries.removeAll {$0 == country}
+        storage.saveCountries(selectedCountries)
+    }
+    
+    // To check if country is selected!
+    func isSelected(_ country: Country) -> Bool {
+        selectedCountries.contains(country)
     }
 }

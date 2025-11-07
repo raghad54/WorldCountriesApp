@@ -11,6 +11,8 @@ struct CountryListView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     @EnvironmentObject var viewModel: CountryListViewModel
     @State private var showingSearch = false
+    @State private var countryToRemove: Country?       // Track the country to remove
+    @State private var showRemoveAlert = false
     @Namespace private var animation
     
     var body: some View {
@@ -24,6 +26,7 @@ struct CountryListView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 12) {
+                    // Header
                     VStack(spacing: 4) {
                         HStack {
                             Image(systemName: "globe.europe.africa.fill")
@@ -54,7 +57,8 @@ struct CountryListView: View {
                         .padding(.horizontal)
                         .opacity(0.3)
                     
-                    if viewModel.countries.isEmpty {
+                    // Empty state
+                    if viewModel.selectedCountries.isEmpty {
                         Spacer()
                         VStack(spacing: 8) {
                             Image(systemName: "magnifyingglass.circle")
@@ -69,16 +73,24 @@ struct CountryListView: View {
                         .transition(.opacity)
                         Spacer()
                     } else {
+                        // Selected countries list
                         ScrollView {
                             LazyVStack(spacing: 12) {
-                                ForEach(viewModel.countries) { country in
+                                ForEach(viewModel.selectedCountries) { country in
                                     VStack(alignment: .leading, spacing: 8) {
                                         HStack {
                                             Text(country.displayName)
                                                 .font(.title3.bold())
                                             Spacer()
-                                            Text(country.flagEmoji)
-                                                .font(.largeTitle)
+                                            
+                                            Button(action: {
+                                                countryToRemove = country
+                                                showRemoveAlert = true
+                                            }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .foregroundColor(.red)
+                                                    .font(.title2)
+                                            }
                                         }
                                         Text("Capital: \(country.capitalName)")
                                             .font(.subheadline)
@@ -92,11 +104,6 @@ struct CountryListView: View {
                                     .cornerRadius(16)
                                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                                     .padding(.horizontal)
-                                    .onTapGesture {
-                                        withAnimation(.spring()) {
-                                            coordinator.showDetails(for: country)
-                                        }
-                                    }
                                 }
                             }
                             .padding(.vertical)
@@ -108,28 +115,26 @@ struct CountryListView: View {
                 Button(action: { showingSearch = true }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 56))
-                        .foregroundStyle(.blue.gradient)
-                        .shadow(radius: 6)
-                        .padding()
+                        .foregroundColor(.blue)
                 }
+//.disabled(viewModel.selectedCountries.count >= 5)
                 .accessibilityLabel("Add new country")
                 .sheet(isPresented: $showingSearch) {
                     CountrySearchView()
                         .environmentObject(viewModel)
                 }
             }
+            // MARK: - Remove confirmation alert
+            .alert("Remove Country?", isPresented: $showRemoveAlert, presenting: countryToRemove) { country in
+                Button("Remove", role: .destructive) {
+                    withAnimation {
+                        viewModel.removeCountry(country)
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: { country in
+                Text("Are you sure you want to remove \(country.displayName) from your list?")
+            }
         }
-    }
-}
-
-private extension Country {
-    var flagEmoji: String {
-        guard let code = name.common.unicodeScalars
-            .map({ 127397 + $0.value })
-            .compactMap(UnicodeScalar.init)
-            .map(String.init)
-            .joined()
-            as String? else { return "🌍" }
-        return code
     }
 }

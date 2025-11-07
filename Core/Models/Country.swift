@@ -49,3 +49,15 @@ struct Name: Codable, Equatable {
 struct Flag: Codable, Equatable {
     let png: String
 }
+
+ extension Country {
+    var flagEmoji: String {
+        guard let code = name.common.unicodeScalars
+            .map({ 127397 + $0.value })
+            .compactMap(UnicodeScalar.init)
+            .map(String.init)
+            .joined()
+            as String? else { return "🌍" }
+        return code
+    }
+}
