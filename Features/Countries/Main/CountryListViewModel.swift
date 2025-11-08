@@ -47,8 +47,7 @@ final class CountryListViewModel: ObservableObject {
         locationService.authorizationStatus
             .sink { [weak self] status in
                 guard let self else { return }
-                // Only add default if list is empty
-                if status == .denied || status == .restricted, self.selectedCountries.isEmpty {
+                if (status == .denied || status == .restricted) && self.selectedCountries.isEmpty {
                     Task { await self.addDefaultCountryIfNeeded() }
                 }
             }
@@ -65,29 +64,25 @@ final class CountryListViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    // MARK: - Public Actions
+    
     func requestUserLocation() {
         locationService.requestPermission()
     }
     
     func addCountry(_ country: Country) {
+        // Prevent duplicates
         guard !selectedCountries.contains(country) else { return }
         
         var temp = selectedCountries
-        
         if let egyptIndex = temp.firstIndex(where: { $0.displayName == defaultCountryName }) {
-            // Remove duplicate if exists
             temp.removeAll { $0 == country }
-            
-            if temp.count >= maxSelectedCountries {
-                if let removableIndex = temp.lastIndex(where: { $0.displayName != defaultCountryName }) {
-                    temp.remove(at: removableIndex)
-                }
+            if temp.count >= maxSelectedCountries,
+               let removableIndex = temp.lastIndex(where: { $0.displayName != defaultCountryName }) {
+                temp.remove(at: removableIndex)
             }
-            
-            temp.insert(country, at: egyptIndex + 1)
-        } else {
             temp.insert(country, at: 0)
+        } else {
+            temp.append(country)
         }
         
         selectedCountries = temp
@@ -116,12 +111,13 @@ final class CountryListViewModel: ObservableObject {
     }
     
     private func addDefaultCountryIfNeeded() async {
+        // Only add if list is completely empty
         guard selectedCountries.isEmpty else { return }
         
         do {
             let countries = try await countryService.searchCountry(by: defaultCountryName).async()
             if let egypt = countries.first {
-                selectedCountries.insert(egypt, at: 0)
+                selectedCountries.append(egypt)
                 storage.saveCountries(selectedCountries)
             }
         } catch {
@@ -130,6 +126,7 @@ final class CountryListViewModel: ObservableObject {
     }
 }
 
+// MARK: - Combine Publisher to Async helper
 extension Publisher where Failure == Error {
     func async() async throws -> Output {
         try await withCheckedThrowingContinuation { continuation in
