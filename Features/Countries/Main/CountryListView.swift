@@ -17,7 +17,6 @@ struct CountryListView: View {
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            // Background Gradient
             LinearGradient(
                 colors: [.blue.opacity(0.1), .mint.opacity(0.2)],
                 startPoint: .topLeading,
@@ -55,8 +54,6 @@ struct CountryListView: View {
                     .transition(.opacity)
                 }
             }
-            
-            // Search Button
             Button(action: { showingSearch = true }) {
                 Image(systemName: "magnifyingglass.circle.fill")
                     .font(.system(size: 56))
@@ -70,6 +67,7 @@ struct CountryListView: View {
         }
         .onAppear {
             viewModel.requestUserLocation()
+            
         }
         .alert("Remove Country?", isPresented: $showRemoveAlert, presenting: countryToRemove) { country in
             Button("Remove", role: .destructive) {

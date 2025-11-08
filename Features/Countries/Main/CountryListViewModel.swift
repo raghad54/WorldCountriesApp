@@ -12,12 +12,10 @@ import CoreLocation
 @MainActor
 final class CountryListViewModel: ObservableObject {
     
-    // MARK: - Published State
     @Published private(set) var selectedCountries: [Country] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     
-    // MARK: - Dependencies
     private let countryService: CountryServiceProtocol
     private let locationService: LocationServiceProtocol
     private let storage: StorageManager
@@ -27,7 +25,6 @@ final class CountryListViewModel: ObservableObject {
     private let defaultCountryName = "Egypt"
     private let maxSelectedCountries = 5
     
-    // MARK: - Init
     init(
         countryService: CountryServiceProtocol = CountryService(),
         locationService: LocationServiceProtocol = LocationService(),
@@ -46,12 +43,12 @@ final class CountryListViewModel: ObservableObject {
         Task { await addDefaultCountryIfNeeded() }
     }
     
-    // MARK: - Location Binding
     private func bindLocation() {
         locationService.authorizationStatus
             .sink { [weak self] status in
                 guard let self else { return }
-                if status == .denied || status == .restricted {
+                // Only add default if list is empty
+                if status == .denied || status == .restricted, self.selectedCountries.isEmpty {
                     Task { await self.addDefaultCountryIfNeeded() }
                 }
             }
@@ -62,11 +59,12 @@ final class CountryListViewModel: ObservableObject {
             .first()
             .sink { [weak self] location in
                 guard let self else { return }
-                Task { await self.detectAndAddCountry(from: location) }
+                if self.selectedCountries.isEmpty {
+                    Task { await self.detectAndAddCountry(from: location) }
+                }
             }
             .store(in: &cancellables)
     }
-    
     // MARK: - Public Actions
     func requestUserLocation() {
         locationService.requestPermission()
@@ -81,17 +79,14 @@ final class CountryListViewModel: ObservableObject {
             // Remove duplicate if exists
             temp.removeAll { $0 == country }
             
-            // Remove oldest non-Egypt if limit reached
             if temp.count >= maxSelectedCountries {
                 if let removableIndex = temp.lastIndex(where: { $0.displayName != defaultCountryName }) {
                     temp.remove(at: removableIndex)
                 }
             }
             
-            // Insert new country after Egypt
             temp.insert(country, at: egyptIndex + 1)
         } else {
-            // Egypt not yet added — insert at start
             temp.insert(country, at: 0)
         }
         
@@ -100,7 +95,6 @@ final class CountryListViewModel: ObservableObject {
     }
     
     func removeCountry(_ country: Country) {
-        // Now we allow removing all countries, including Egypt
         selectedCountries.removeAll { $0 == country }
         storage.saveCountries(selectedCountries)
     }
@@ -122,8 +116,7 @@ final class CountryListViewModel: ObservableObject {
     }
     
     private func addDefaultCountryIfNeeded() async {
-        // Only add if the list is empty or Egypt is not present
-        guard !selectedCountries.contains(where: { $0.displayName == defaultCountryName }) else { return }
+        guard selectedCountries.isEmpty else { return }
         
         do {
             let countries = try await countryService.searchCountry(by: defaultCountryName).async()
@@ -137,7 +130,6 @@ final class CountryListViewModel: ObservableObject {
     }
 }
 
-// MARK: - Combine Publisher to Async helper
 extension Publisher where Failure == Error {
     func async() async throws -> Output {
         try await withCheckedThrowingContinuation { continuation in
