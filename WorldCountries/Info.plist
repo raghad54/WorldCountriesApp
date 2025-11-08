@@ -9,6 +9,5 @@
 
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>Your location helps us show your current country.</string>
-
 </dict>
 </plist>
