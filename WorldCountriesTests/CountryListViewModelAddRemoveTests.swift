@@ -9,17 +9,6 @@ import XCTest
 import Combine
 @testable import WorldCountries
 
-// MARK: - Protocol for storage so we can mock it
-protocol StorageProtocol {
-    func saveCountries(_ countries: [Country])
-    func loadCountries() -> [Country]
-}
-
-// Make real StorageManager conform to StorageProtocol
-extension StorageManager: StorageProtocol { }
-
-
-// MARK: - CountryListViewModel Tests
 @MainActor
 final class CountryListViewModelTests: XCTestCase {
     var viewModel: CountryListViewModel!

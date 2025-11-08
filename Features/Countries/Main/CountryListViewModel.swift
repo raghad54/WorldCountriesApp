@@ -18,7 +18,7 @@ final class CountryListViewModel: ObservableObject {
     
     private let countryService: CountryServiceProtocol
     private let locationService: LocationServiceProtocol
-    private let storage: StorageManager
+    private let storage: StorageProtocol
     private let resolver: CountryResolver
     
     private var cancellables = Set<AnyCancellable>()
@@ -28,7 +28,7 @@ final class CountryListViewModel: ObservableObject {
     init(
         countryService: CountryServiceProtocol = CountryService(),
         locationService: LocationServiceProtocol = LocationService(),
-        storage: StorageManager = .shared,
+        storage: StorageProtocol = StorageManager.shared,
         resolver: CountryResolver = CountryResolver()
     ) {
         self.countryService = countryService
@@ -44,26 +44,34 @@ final class CountryListViewModel: ObservableObject {
     }
     
     private func bindLocation() {
-        locationService.authorizationStatus
-            .sink { [weak self] status in
-                guard let self else { return }
-                if (status == .denied || status == .restricted) && self.selectedCountries.isEmpty {
-                    Task { await self.addDefaultCountryIfNeeded() }
-                }
-            }
-            .store(in: &cancellables)
-        
-        locationService.userLocation
-            .compactMap { $0 }
-            .first()
-            .sink { [weak self] location in
-                guard let self else { return }
-                if self.selectedCountries.isEmpty {
-                    Task { await self.detectAndAddCountry(from: location) }
-                }
-            }
-            .store(in: &cancellables)
-    }
+           locationService.authorizationStatus
+               .sink { [weak self] status in
+                   guard let self else { return }
+                   
+                   // When permission is denied or restricted, fallback to default if empty
+                   if (status == .denied || status == .restricted) && self.selectedCountries.isEmpty {
+                       Task { await self.addDefaultCountryIfNeeded() }
+                   }
+                   
+                   // When permission allows location, detect user country if empty
+                   if (status == .authorizedAlways || status == .authorizedWhenInUse) && self.selectedCountries.isEmpty {
+                       self.locationService.requestPermission()
+                   }
+               }
+               .store(in: &cancellables)
+           
+           // Subscribe to user location updates
+           locationService.userLocation
+               .compactMap { $0 }
+               .first()
+               .sink { [weak self] location in
+                   guard let self else { return }
+                   if self.selectedCountries.isEmpty {
+                       Task { await self.detectAndAddCountry(from: location) }
+                   }
+               }
+               .store(in: &cancellables)
+       }
     
     func requestUserLocation() {
         locationService.requestPermission()
