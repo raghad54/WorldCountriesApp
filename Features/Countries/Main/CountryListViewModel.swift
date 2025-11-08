@@ -38,25 +38,33 @@ final class CountryListViewModel: ObservableObject {
         self.selectedCountries = storage.loadCountries()
 
         bindLocation()
-
-        // Ensure default country only if not added before
-        Task { await addDefaultCountryIfNeeded() }
     }
 
     private func bindLocation() {
+        // Track if default country was added this launch to prevent duplicates
+        var defaultCountryAddedThisLaunch = false
+
         locationService.authorizationStatus
             .sink { [weak self] status in
                 guard let self else { return }
 
-                // Permission denied or restricted: add default only if not already added
-                if (status == .denied || status == .restricted) {
-                    Task { await self.addDefaultCountryIfNeeded() }
-                }
+                switch status {
+                case .denied, .restricted:
+                    // Add Egypt if list empty and not already added
+                    if !defaultCountryAddedThisLaunch &&
+                        !self.selectedCountries.contains(where: { $0.displayName == self.defaultCountryName }) {
 
-                // Permission allowed: detect location if no countries selected
-                if (status == .authorizedAlways || status == .authorizedWhenInUse),
-                   self.selectedCountries.isEmpty {
-                    self.locationService.requestPermission()
+                        defaultCountryAddedThisLaunch = true
+                        Task { await self.addDefaultCountryIfNeeded() }
+                    }
+
+                case .authorizedAlways, .authorizedWhenInUse:
+                    // Detect location only if list is empty
+                    if self.selectedCountries.isEmpty {
+                        self.locationService.requestPermission()
+                    }
+
+                default: break
                 }
             }
             .store(in: &cancellables)
@@ -66,6 +74,8 @@ final class CountryListViewModel: ObservableObject {
             .first()
             .sink { [weak self] location in
                 guard let self else { return }
+
+                // Only detect country if no countries selected
                 if self.selectedCountries.isEmpty {
                     Task { await self.detectAndAddCountry(from: location) }
                 }
@@ -82,6 +92,7 @@ final class CountryListViewModel: ObservableObject {
 
         var temp = selectedCountries
         if let egyptIndex = temp.firstIndex(where: { $0.displayName == defaultCountryName }) {
+            // Keep Egypt at top if present
             temp.removeAll { $0 == country }
             if temp.count >= maxSelectedCountries,
                let removableIndex = temp.lastIndex(where: { $0.displayName != defaultCountryName }) {
@@ -106,6 +117,7 @@ final class CountryListViewModel: ObservableObject {
     }
 
     // MARK: - Private Helpers
+
     private func detectAndAddCountry(from location: CLLocation) async {
         isLoading = true
         defer { isLoading = false }
@@ -118,22 +130,20 @@ final class CountryListViewModel: ObservableObject {
     }
 
     private func addDefaultCountryIfNeeded() async {
-        // Only add if not already added
-        guard !storage.loadDefaultCountryAddedFlag() else { return }
+        // Only add Egypt if it's not already in the list
+        guard !selectedCountries.contains(where: { $0.displayName == defaultCountryName }) else { return }
 
         do {
             let countries = try await countryService.searchCountry(by: defaultCountryName).async()
             if let egypt = countries.first {
                 selectedCountries.append(egypt)
                 storage.saveCountries(selectedCountries)
-                storage.saveDefaultCountryAddedFlag(true) // mark as added
             }
         } catch {
             errorMessage = "Failed to load default country: \(error.localizedDescription)"
         }
     }
 }
-
 
 // MARK: - Combine Publisher to Async helper
 extension Publisher where Failure == Error {
