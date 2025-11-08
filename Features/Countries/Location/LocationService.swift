@@ -4,46 +4,53 @@
 //
 //  Created by Raghad's Mac on 07/11/2025.
 //
-import CoreLocation
-import Combine
 
-final class LocationService: NSObject, ObservableObject {
+import Foundation
+import Combine
+import CoreLocation
+
+protocol LocationServiceProtocol {
+    var userLocation: AnyPublisher<CLLocation?, Never> { get }
+    var authorizationStatus: AnyPublisher<CLAuthorizationStatus, Never> { get }
+    func requestPermission()
+}
+
+final class LocationService: NSObject, ObservableObject, LocationServiceProtocol {
     private let manager = CLLocationManager()
-    private let subject = PassthroughSubject<CLLocation, Never>()
-    
-    var locationPublisher: AnyPublisher<CLLocation, Never> {
-        subject.eraseToAnyPublisher()
-    }
+
+    @Published private var location: CLLocation?
+    @Published private var status: CLAuthorizationStatus = .notDetermined
 
     override init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
     }
 
-    func requestPermissionAndLocation() {
+    var userLocation: AnyPublisher<CLLocation?, Never> {
+        $location.eraseToAnyPublisher()
+    }
+
+    var authorizationStatus: AnyPublisher<CLAuthorizationStatus, Never> {
+        $status.eraseToAnyPublisher()
+    }
+
+    func requestPermission() {
         manager.requestWhenInUseAuthorization()
-        manager.requestLocation()
+        manager.startUpdatingLocation()
     }
 }
 
+// MARK: - CLLocationManagerDelegate
 extension LocationService: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.first {
-            subject.send(location)
+        if let latest = locations.last {
+            location = latest
+            manager.stopUpdatingLocation()
         }
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error:", error.localizedDescription)
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
-            manager.requestLocation()
-        default:
-            break
-        }
+        status = manager.authorizationStatus
     }
 }

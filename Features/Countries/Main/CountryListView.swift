@@ -17,6 +17,7 @@ struct CountryListView: View {
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            // Background Gradient
             LinearGradient(
                 colors: [.blue.opacity(0.1), .mint.opacity(0.2)],
                 startPoint: .topLeading,
@@ -55,17 +56,19 @@ struct CountryListView: View {
                 }
             }
             
+            // Search Button
             Button(action: { showingSearch = true }) {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: "magnifyingglass.circle.fill")
                     .font(.system(size: 56))
                     .foregroundColor(.blue)
             }
-            .accessibilityLabel("Add new country")
+            .accessibilityLabel("Search and add new country")
             .sheet(isPresented: $showingSearch) {
                 CountrySearchView()
                     .environmentObject(viewModel)
             }
-        }.onAppear {
+        }
+        .onAppear {
             viewModel.requestUserLocation()
         }
         .alert("Remove Country?", isPresented: $showRemoveAlert, presenting: countryToRemove) { country in
@@ -109,9 +112,7 @@ private extension CountryListView {
         }
         .padding(.top, 16)
     }
-}
-
-private extension CountryListView {
+    
     var emptyState: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -124,7 +125,7 @@ private extension CountryListView {
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text("Tap the + button to start exploring 🌏")
+                Text("Tap the search button to start exploring 🌏")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }

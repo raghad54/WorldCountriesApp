@@ -10,11 +10,9 @@
 <plist version="1.0">
     <dict>
         <key>NSLocationWhenInUseUsageDescription</key>
-        <string>We use your location to automatically select your country 🇪🇬 and make your experience smoother.</string>
-        
+        <string>We use your location to detect your current country.</string>
         <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-        <string>We need your location even in the background to track your country selection.</string>
-
+        <string>We use your location to detect your current country.</string>
 
     </dict>
     </plist>

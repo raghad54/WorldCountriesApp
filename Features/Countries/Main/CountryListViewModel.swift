@@ -9,62 +9,98 @@ import Foundation
 import Combine
 import CoreLocation
 
+@MainActor
 final class CountryListViewModel: ObservableObject {
-    @Published private(set) var countries: [Country] = []
+    
+    // MARK: - Published State
     @Published private(set) var selectedCountries: [Country] = []
-    @Published private(set) var isLoading: Bool = false
+    @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     
-    private let networkService: NetworkServiceProtocol
+    // MARK: - Dependencies
+    private let countryService: CountryServiceProtocol
+    private let locationService: LocationServiceProtocol
     private let storage: StorageManager
-    private let locationManager: LocationManager
     private let resolver: CountryResolver
     
     private var cancellables = Set<AnyCancellable>()
+    private let defaultCountryName = "Egypt"
+    private let maxSelectedCountries = 5
     
+    // MARK: - Init
     init(
-        networkService: NetworkServiceProtocol = NetworkService(),
+        countryService: CountryServiceProtocol = CountryService(),
+        locationService: LocationServiceProtocol = LocationService(),
         storage: StorageManager = .shared,
-        locationManager: LocationManager = LocationManager(),
         resolver: CountryResolver = CountryResolver()
     ) {
-        self.networkService = networkService
+        self.countryService = countryService
+        self.locationService = locationService
         self.storage = storage
-        self.locationManager = locationManager
         self.resolver = resolver
-        
         self.selectedCountries = storage.loadCountries()
-        setupBindings()
+        
+        bindLocation()
+        
+        // Ensure default country if list is empty on first launch
+        Task { await addDefaultCountryIfNeeded() }
     }
     
-    private func setupBindings() {
-        locationManager.$userLocation
+    // MARK: - Location Binding
+    private func bindLocation() {
+        locationService.authorizationStatus
+            .sink { [weak self] status in
+                guard let self else { return }
+                if status == .denied || status == .restricted {
+                    Task { await self.addDefaultCountryIfNeeded() }
+                }
+            }
+            .store(in: &cancellables)
+        
+        locationService.userLocation
             .compactMap { $0 }
-            .first() // only handle the first location update
+            .first()
             .sink { [weak self] location in
                 guard let self else { return }
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    await self.detectAndAddCountry(from: location)
-                }
+                Task { await self.detectAndAddCountry(from: location) }
             }
             .store(in: &cancellables)
     }
     
+    // MARK: - Public Actions
     func requestUserLocation() {
-        locationManager.requestLocation()
+        locationService.requestPermission()
     }
     
     func addCountry(_ country: Country) {
         guard !selectedCountries.contains(country) else { return }
-        if selectedCountries.count >= 5 {
-            selectedCountries.removeFirst()
+        
+        var temp = selectedCountries
+        
+        if let egyptIndex = temp.firstIndex(where: { $0.displayName == defaultCountryName }) {
+            // Remove duplicate if exists
+            temp.removeAll { $0 == country }
+            
+            // Remove oldest non-Egypt if limit reached
+            if temp.count >= maxSelectedCountries {
+                if let removableIndex = temp.lastIndex(where: { $0.displayName != defaultCountryName }) {
+                    temp.remove(at: removableIndex)
+                }
+            }
+            
+            // Insert new country after Egypt
+            temp.insert(country, at: egyptIndex + 1)
+        } else {
+            // Egypt not yet added — insert at start
+            temp.insert(country, at: 0)
         }
-        selectedCountries.insert(country, at: 0)
+        
+        selectedCountries = temp
         storage.saveCountries(selectedCountries)
     }
     
     func removeCountry(_ country: Country) {
+        // Now we allow removing all countries, including Egypt
         selectedCountries.removeAll { $0 == country }
         storage.saveCountries(selectedCountries)
     }
@@ -74,7 +110,6 @@ final class CountryListViewModel: ObservableObject {
     }
     
     // MARK: - Private Helpers
-    @MainActor
     private func detectAndAddCountry(from location: CLLocation) async {
         isLoading = true
         defer { isLoading = false }
@@ -82,21 +117,42 @@ final class CountryListViewModel: ObservableObject {
         if let country = await resolver.resolveCountry(from: location) {
             addCountry(country)
         } else {
-            addDefaultCountry() // no await needed (Combine version)
+            await addDefaultCountryIfNeeded()
         }
     }
     
-    private func addDefaultCountry() {
-        networkService.searchCountries(by: "Egypt")
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    print("Failed to load default country:", error)
-                }
-            } receiveValue: { [weak self] countries in
-                guard let defaultCountry = countries.first else { return }
-                self?.addCountry(defaultCountry)
+    private func addDefaultCountryIfNeeded() async {
+        // Only add if the list is empty or Egypt is not present
+        guard !selectedCountries.contains(where: { $0.displayName == defaultCountryName }) else { return }
+        
+        do {
+            let countries = try await countryService.searchCountry(by: defaultCountryName).async()
+            if let egypt = countries.first {
+                selectedCountries.insert(egypt, at: 0)
+                storage.saveCountries(selectedCountries)
             }
-            .store(in: &cancellables)
+        } catch {
+            errorMessage = "Failed to load default country: \(error.localizedDescription)"
+        }
+    }
+}
+
+// MARK: - Combine Publisher to Async helper
+extension Publisher where Failure == Error {
+    func async() async throws -> Output {
+        try await withCheckedThrowingContinuation { continuation in
+            var cancellable: AnyCancellable?
+            cancellable = self.sink { completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+                cancellable?.cancel()
+            } receiveValue: { value in
+                continuation.resume(returning: value)
+                cancellable?.cancel()
+            }
+        }
     }
 }

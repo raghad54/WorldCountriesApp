@@ -26,6 +26,7 @@
 		042F11A72EBE98F300F6D006 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11A62EBE98F300F6D006 /* LocationService.swift */; };
 		042F11A92EBE991F00F6D006 /* CountryResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11A82EBE991F00F6D006 /* CountryResolver.swift */; };
 		042F11AB2EBE9F9900F6D006 /* Property List.plist in Resources */ = {isa = PBXBuildFile; fileRef = 042F11AA2EBE9F9900F6D006 /* Property List.plist */; };
+		042F11AD2EBF626800F6D006 /* CountryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042F11AC2EBF626800F6D006 /* CountryService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +69,7 @@
 		042F11A62EBE98F300F6D006 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		042F11A82EBE991F00F6D006 /* CountryResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryResolver.swift; sourceTree = "<group>"; };
 		042F11AA2EBE9F9900F6D006 /* Property List.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Property List.plist"; sourceTree = "<group>"; };
+		042F11AC2EBF626800F6D006 /* CountryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +198,7 @@
 				042F11842EBCD10A00F6D006 /* CountryListView.swift */,
 				042F11A42EBE7EF200F6D006 /* CountryRowView.swift */,
 				042F11862EBCDB2D00F6D006 /* CountryListViewModel.swift */,
+				042F11AC2EBF626800F6D006 /* CountryService.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -373,6 +376,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				042F11AD2EBF626800F6D006 /* CountryService.swift in Sources */,
 				042F117B2EBCCF3100F6D006 /* NetworkService.swift in Sources */,
 				042F11852EBCD10A00F6D006 /* CountryListView.swift in Sources */,
 				042F11A52EBE7EF200F6D006 /* CountryRowView.swift in Sources */,
